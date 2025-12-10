@@ -227,7 +227,49 @@ type nul > .env
 touch .env
 ```
 
-**6-3. Supabase 환경 변수 설정**
+> **💡 팁**: `.env.example` 파일을 복사하여 `.env` 파일을 생성할 수 있습니다:
+> ```bash
+# Windows
+copy .env.example .env
+
+# Mac/Linux
+cp .env.example .env
+```
+
+**6-3. 한국관광공사 API 환경 변수 설정**
+
+1. [한국관광공사 공공 API](https://www.data.go.kr/data/15101578/openapi.do) 신청
+2. 발급받은 API 키를 `.env` 파일에 입력:
+   ```env
+   # 한국관광공사 API 키 (클라이언트 사이드용)
+   NEXT_PUBLIC_TOUR_API_KEY="your_tour_api_key_here"
+   
+   # 한국관광공사 API 키 (서버 사이드용, 백업)
+   # NEXT_PUBLIC_TOUR_API_KEY가 인식 안 될 경우를 대비
+   TOUR_API_KEY="your_tour_api_key_here"
+   ```
+
+> **📝 참고**: 
+> - 두 키는 같은 값을 사용합니다
+> - 클라이언트 컴포넌트에서는 `NEXT_PUBLIC_TOUR_API_KEY` 사용
+> - 서버 컴포넌트/API Route에서는 둘 다 사용 가능
+
+**6-4. 네이버 지도 API 환경 변수 설정**
+
+1. [네이버 클라우드 플랫폼](https://www.ncloud.com/product/applicationService/maps) Maps API 신청
+   - 신용카드 등록 필수 (월 10,000,000건 무료)
+   - Web Dynamic Map 서비스 활성화 필요
+2. 발급받은 Client ID를 `.env` 파일에 입력:
+   ```env
+   # 네이버 지도 API 클라이언트 ID
+   NEXT_PUBLIC_NAVER_MAP_CLIENT_ID="your_naver_map_client_id_here"
+   ```
+
+> **📝 참고**: 
+> - NCP Maps API v3 사용
+> - URL 파라미터로 `ncpKeyId` 사용 (구 버전의 `ncpClientId` 아님)
+
+**6-5. Supabase 환경 변수 설정**
 
 1. Supabase Dashboard → **Settings** → **API**
 2. 다음 값들을 복사하여 `.env` 파일에 입력:
@@ -250,7 +292,7 @@ touch .env
 > - 서버 사이드에서만 사용하세요 (API Routes, Server Actions 등)
 > - 클라이언트 컴포넌트나 브라우저에 노출되면 안 됩니다!
 
-**6-4. Clerk 환경 변수 설정**
+**6-6. Clerk 환경 변수 설정**
 
 1. Clerk Dashboard → **API Keys**
 2. 다음 값들을 복사하여 `.env` 파일에 입력:
@@ -261,6 +303,9 @@ touch .env
    NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL="/"
    NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL="/"
    ```
+
+> **⚠️ 중요**: 
+> - `CLERK_SECRET_KEY`는 서버 사이드 전용이므로 절대 클라이언트에 노출하지 마세요!
 
 #### 7. Cursor MCP 설정 (선택사항)
 
