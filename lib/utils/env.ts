@@ -184,9 +184,18 @@ export function getTourApiKey(): string | undefined {
   }
 
   // 서버 사이드: NEXT_PUBLIC_TOUR_API_KEY 우선, 없으면 TOUR_API_KEY
-  return (
-    process.env.NEXT_PUBLIC_TOUR_API_KEY || process.env.TOUR_API_KEY
-  );
+  const apiKey = process.env.NEXT_PUBLIC_TOUR_API_KEY || process.env.TOUR_API_KEY;
+  
+  // 디버깅 (개발 환경에서만)
+  if (process.env.NODE_ENV === 'development' && !apiKey) {
+    console.warn('[Tour API] API 키가 없습니다:', {
+      hasPublic: !!process.env.NEXT_PUBLIC_TOUR_API_KEY,
+      hasServer: !!process.env.TOUR_API_KEY,
+      nodeEnv: process.env.NODE_ENV,
+    });
+  }
+  
+  return apiKey;
 }
 
 /**

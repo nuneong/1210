@@ -26,7 +26,7 @@
  * @see {@link https://www.data.go.kr/data/15101578/openapi.do} - 한국관광공사 API 문서
  */
 
-import { getTourApiKey } from '@/lib/utils/env';
+import { getTourApiKey } from "@/lib/utils/env";
 import type {
   AreaCodeResponse,
   AreaBasedListResponse,
@@ -44,12 +44,12 @@ import type {
   GetDetailPetTourParams,
   TourItem,
   TourDetail,
-} from '@/lib/types/tour';
+} from "@/lib/types/tour";
 
 /**
- * API Base URL
+ * API Base URL (끝에 슬래시 포함)
  */
-const BASE_URL = 'https://apis.data.go.kr/B551011/KorService2';
+const BASE_URL = "https://apis.data.go.kr/B551011/KorService2/";
 
 /**
  * 기본 타임아웃 (밀리초)
@@ -76,7 +76,7 @@ export class TourApiError extends Error {
     public responseData?: unknown,
   ) {
     super(message);
-    this.name = 'TourApiError';
+    this.name = "TourApiError";
     Object.setPrototypeOf(this, TourApiError.prototype);
   }
 }
@@ -85,9 +85,9 @@ export class TourApiError extends Error {
  * API 키 관련 에러
  */
 export class TourApiKeyError extends TourApiError {
-  constructor(message: string = 'API 키가 설정되지 않았습니다.') {
+  constructor(message: string = "API 키가 설정되지 않았습니다.") {
     super(message);
-    this.name = 'TourApiKeyError';
+    this.name = "TourApiKeyError";
     Object.setPrototypeOf(this, TourApiKeyError.prototype);
   }
 }
@@ -96,9 +96,9 @@ export class TourApiKeyError extends TourApiError {
  * Rate Limit 초과 에러
  */
 export class TourApiRateLimitError extends TourApiError {
-  constructor(message: string = 'API 호출 제한을 초과했습니다.') {
+  constructor(message: string = "API 호출 제한을 초과했습니다.") {
     super(message, 429);
-    this.name = 'TourApiRateLimitError';
+    this.name = "TourApiRateLimitError";
     Object.setPrototypeOf(this, TourApiRateLimitError.prototype);
   }
 }
@@ -107,9 +107,9 @@ export class TourApiRateLimitError extends TourApiError {
  * 네트워크 에러
  */
 export class TourApiNetworkError extends TourApiError {
-  constructor(message: string = '네트워크 오류가 발생했습니다.') {
+  constructor(message: string = "네트워크 오류가 발생했습니다.") {
     super(message);
-    this.name = 'TourApiNetworkError';
+    this.name = "TourApiNetworkError";
     Object.setPrototypeOf(this, TourApiNetworkError.prototype);
   }
 }
@@ -125,14 +125,16 @@ function createCommonParams(): {
 } {
   const serviceKey = getTourApiKey();
   if (!serviceKey) {
-    throw new TourApiKeyError();
+    throw new TourApiKeyError(
+      "한국관광공사 API 키가 설정되지 않았습니다. NEXT_PUBLIC_TOUR_API_KEY 또는 TOUR_API_KEY 환경변수를 확인하세요.",
+    );
   }
 
   return {
     serviceKey,
-    MobileOS: 'ETC',
-    MobileApp: 'MyTrip',
-    _type: 'json',
+    MobileOS: "ETC",
+    MobileApp: "MyTrip",
+    _type: "json",
   };
 }
 
@@ -143,7 +145,9 @@ function buildApiUrl(
   endpoint: string,
   params: Record<string, string | number | undefined>,
 ): string {
-  const url = new URL(endpoint, BASE_URL);
+  // endpoint 앞의 슬래시 제거 (BASE_URL 끝에 이미 슬래시가 있음)
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  const url = new URL(cleanEndpoint, BASE_URL);
   const commonParams = createCommonParams();
 
   // 공통 파라미터 추가
@@ -153,7 +157,7 @@ function buildApiUrl(
 
   // 추가 파라미터 추가 (undefined 제외)
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== "") {
       url.searchParams.append(key, String(value));
     }
   });
@@ -182,7 +186,9 @@ async function retryApiCall<T>(
     if (
       error instanceof TourApiKeyError ||
       error instanceof TourApiRateLimitError ||
-      (error instanceof TourApiError && error.statusCode && error.statusCode < 500)
+      (error instanceof TourApiError &&
+        error.statusCode &&
+        error.statusCode < 500)
     ) {
       throw error;
     }
@@ -193,7 +199,8 @@ async function retryApiCall<T>(
     }
 
     // 재시도 대기
-    const delayMs = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
+    const delayMs =
+      RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
     await delay(delayMs);
 
     // 재시도
@@ -210,6 +217,18 @@ async function callApi<T>(
 ): Promise<T> {
   const url = buildApiUrl(endpoint, params);
 
+  // 디버깅: API 키 확인 (서버 사이드에서만)
+  if (typeof window === 'undefined') {
+    const apiKey = getTourApiKey();
+    console.log('[Tour API Debug]', {
+      endpoint,
+      hasApiKey: !!apiKey,
+      apiKeyLength: apiKey?.length,
+      apiKeyPrefix: apiKey?.substring(0, 10) + '...',
+      url: url.replace(apiKey || '', '***'),
+    });
+  }
+
   const fetchWithTimeout = async (): Promise<Response> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
@@ -218,17 +237,17 @@ async function callApi<T>(
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
       clearTimeout(timeoutId);
       return response;
     } catch (error) {
       clearTimeout(timeoutId);
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new TourApiNetworkError('요청 시간이 초과되었습니다.');
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new TourApiNetworkError("요청 시간이 초과되었습니다.");
       }
-      throw new TourApiNetworkError('네트워크 오류가 발생했습니다.');
+      throw new TourApiNetworkError("네트워크 오류가 발생했습니다.");
     }
   };
 
@@ -240,15 +259,53 @@ async function callApi<T>(
       throw new TourApiRateLimitError();
     }
 
+    // 응답 텍스트를 먼저 읽기 (body는 한 번만 읽을 수 있음)
+    const responseText = await response.text();
+
+    // 디버깅: 응답 상태 확인 (에러 발생 시)
+    if (!response.ok || response.status === 500) {
+      const apiKey = getTourApiKey();
+      console.error('[Tour API Error]', {
+        status: response.status,
+        statusText: response.statusText,
+        endpoint,
+        hasApiKey: !!apiKey,
+        responseTextPreview: responseText.substring(0, 1000),
+        url: url.replace(apiKey || '', '***'),
+      });
+    }
+
+    // 빈 응답 체크
+    if (!responseText || responseText.trim().length === 0) {
+      throw new TourApiError("빈 응답을 받았습니다.", response.status, null);
+    }
+
+    // HTML 응답 체크 (에러 페이지일 수 있음)
+    if (responseText.trim().startsWith("<!")) {
+      throw new TourApiError(
+        "HTML 응답을 받았습니다. API 키를 확인해주세요.",
+        response.status,
+        responseText.substring(0, 200), // 처음 200자만
+      );
+    }
+
     // 응답 파싱
     let data: unknown;
     try {
-      data = await response.json();
-    } catch (error) {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      // 파싱 에러 상세 정보 로깅
+      console.error("JSON 파싱 실패:", {
+        status: response.status,
+        statusText: response.statusText,
+        responseText: responseText.substring(0, 500), // 처음 500자만
+        error: parseError,
+      });
+
       throw new TourApiError(
-        '응답을 파싱할 수 없습니다.',
+        `응답을 파싱할 수 없습니다. (상태: ${response.status})`,
         response.status,
-        await response.text(),
+        responseText.substring(0, 500),
       );
     }
 
@@ -264,11 +321,11 @@ async function callApi<T>(
     // 응답 구조 검증
     if (
       !data ||
-      typeof data !== 'object' ||
-      !('response' in data) ||
-      !('header' in (data as { response: { header: unknown } }).response)
+      typeof data !== "object" ||
+      !("response" in data) ||
+      !("header" in (data as { response: { header: unknown } }).response)
     ) {
-      throw new TourApiError('잘못된 응답 형식입니다.', response.status, data);
+      throw new TourApiError("잘못된 응답 형식입니다.", response.status, data);
     }
 
     const responseData = data as {
@@ -279,7 +336,7 @@ async function callApi<T>(
     };
 
     // 결과 코드 확인
-    if (responseData.response.header.resultCode !== '0000') {
+    if (responseData.response.header.resultCode !== "0000") {
       throw new TourApiError(
         `API 오류: ${responseData.response.header.resultMsg}`,
         response.status,
@@ -303,7 +360,7 @@ export async function getAreaCode(
   if (params.numOfRows) queryParams.numOfRows = params.numOfRows;
   if (params.pageNo) queryParams.pageNo = params.pageNo;
 
-  return callApi<AreaCodeResponse>('/areaCode2', queryParams);
+  return callApi<AreaCodeResponse>("/areaCode2", queryParams);
 }
 
 /**
@@ -327,7 +384,7 @@ export async function getAreaBasedList(
   if (params.numOfRows) queryParams.numOfRows = params.numOfRows;
   if (params.pageNo) queryParams.pageNo = params.pageNo;
 
-  return callApi<AreaBasedListResponse>('/areaBasedList2', queryParams);
+  return callApi<AreaBasedListResponse>("/areaBasedList2", queryParams);
 }
 
 /**
@@ -353,7 +410,7 @@ export async function searchKeyword(
   if (params.numOfRows) queryParams.numOfRows = params.numOfRows;
   if (params.pageNo) queryParams.pageNo = params.pageNo;
 
-  return callApi<SearchKeywordResponse>('/searchKeyword2', queryParams);
+  return callApi<SearchKeywordResponse>("/searchKeyword2", queryParams);
 }
 
 /**
@@ -377,7 +434,7 @@ export async function getDetailCommon(
   if (params.mapinfoYN) queryParams.mapinfoYN = params.mapinfoYN;
   if (params.overviewYN) queryParams.overviewYN = params.overviewYN;
 
-  return callApi<DetailCommonResponse>('/detailCommon2', queryParams);
+  return callApi<DetailCommonResponse>("/detailCommon2", queryParams);
 }
 
 /**
@@ -393,7 +450,7 @@ export async function getDetailIntro(
     contentTypeId: params.contentTypeId,
   };
 
-  return callApi<DetailIntroResponse>('/detailIntro2', queryParams);
+  return callApi<DetailIntroResponse>("/detailIntro2", queryParams);
 }
 
 /**
@@ -413,7 +470,7 @@ export async function getDetailImage(
   if (params.numOfRows) queryParams.numOfRows = params.numOfRows;
   if (params.pageNo) queryParams.pageNo = params.pageNo;
 
-  return callApi<DetailImageResponse>('/detailImage2', queryParams);
+  return callApi<DetailImageResponse>("/detailImage2", queryParams);
 }
 
 /**
@@ -428,15 +485,15 @@ export async function getDetailPetTour(
     contentId: params.contentId,
   };
 
-  return callApi<DetailPetTourResponse>('/detailPetTour2', queryParams);
+  return callApi<DetailPetTourResponse>("/detailPetTour2", queryParams);
 }
 
 /**
  * 응답에서 항목 배열 추출 헬퍼 함수
  */
-export function extractItems<T>(
-  response: { response: { body: { items?: { item?: T | T[] } } } },
-): T[] {
+export function extractItems<T>(response: {
+  response: { body: { items?: { item?: T | T[] } } };
+}): T[] {
   const items = response.response.body.items?.item;
   if (!items) {
     return [];
@@ -449,12 +506,12 @@ export function extractItems<T>(
  */
 export function isTourItem(item: unknown): item is TourItem {
   return (
-    typeof item === 'object' &&
+    typeof item === "object" &&
     item !== null &&
-    'contentid' in item &&
-    'title' in item &&
-    typeof (item as TourItem).contentid === 'string' &&
-    typeof (item as TourItem).title === 'string'
+    "contentid" in item &&
+    "title" in item &&
+    typeof (item as TourItem).contentid === "string" &&
+    typeof (item as TourItem).title === "string"
   );
 }
 
@@ -463,12 +520,11 @@ export function isTourItem(item: unknown): item is TourItem {
  */
 export function isTourDetail(item: unknown): item is TourDetail {
   return (
-    typeof item === 'object' &&
+    typeof item === "object" &&
     item !== null &&
-    'contentid' in item &&
-    'title' in item &&
-    typeof (item as TourDetail).contentid === 'string' &&
-    typeof (item as TourDetail).title === 'string'
+    "contentid" in item &&
+    "title" in item &&
+    typeof (item as TourDetail).contentid === "string" &&
+    typeof (item as TourDetail).title === "string"
   );
 }
-
