@@ -66,11 +66,11 @@
   - [x] `components/Navbar.tsx` 업데이트
     - [x] 로고, 검색창, 로그인 버튼
     - [x] 네비게이션 링크 (홈, 통계, 북마크)
-- [ ] 공통 컴포넌트
-  - [ ] `components/ui/loading.tsx` - 로딩 스피너
-  - [ ] `components/ui/skeleton.tsx` - 스켈레톤 UI
-  - [ ] `components/ui/error.tsx` - 에러 메시지
-  - [ ] `components/ui/toast.tsx` - 토스트 알림 (shadcn/ui)
+- [x] 공통 컴포넌트
+  - [x] `components/ui/loading.tsx` - 로딩 스피너
+  - [x] `components/ui/skeleton.tsx` - 스켈레톤 UI
+  - [x] `components/ui/error.tsx` - 에러 메시지
+  - [x] `components/ui/toast.tsx` - 토스트 알림 (shadcn/ui)
 
 ## Phase 2: 홈페이지 (`/`) - 관광지 목록
 

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import Navbar from "@/components/Navbar";
 import { SyncUserProvider } from "@/components/providers/sync-user-provider";
+import { Toaster } from "@/components/ui/toast";
 import { koKR } from "@/lib/clerk/localization";
 import "./globals.css";
 
@@ -36,6 +37,7 @@ export default function RootLayout({
           <SyncUserProvider>
             <Navbar />
             {children}
+            <Toaster />
           </SyncUserProvider>
         </body>
       </html>
