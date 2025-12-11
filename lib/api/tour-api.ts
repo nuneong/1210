@@ -44,6 +44,7 @@ import type {
   GetDetailPetTourParams,
   TourItem,
   TourDetail,
+  TourIntro,
 } from "@/lib/types/tour";
 
 /**
@@ -507,6 +508,19 @@ export function extractItems<T>(response: {
 export function extractDetail(
   response: DetailCommonResponse,
 ): TourDetail | null {
+  const items = response.response.body.items?.item;
+  if (!items) {
+    return null;
+  }
+  return Array.isArray(items) ? items[0] : items;
+}
+
+/**
+ * 운영 정보 응답에서 TourIntro 추출 헬퍼 함수
+ */
+export function extractIntro(
+  response: DetailIntroResponse,
+): TourIntro | null {
   const items = response.response.body.items?.item;
   if (!items) {
     return null;
