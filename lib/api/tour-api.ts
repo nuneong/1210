@@ -502,6 +502,19 @@ export function extractItems<T>(response: {
 }
 
 /**
+ * 상세 정보 응답에서 TourDetail 추출 헬퍼 함수
+ */
+export function extractDetail(
+  response: DetailCommonResponse,
+): TourDetail | null {
+  const items = response.response.body.items?.item;
+  if (!items) {
+    return null;
+  }
+  return Array.isArray(items) ? items[0] : items;
+}
+
+/**
  * TourItem 타입 가드
  */
 export function isTourItem(item: unknown): item is TourItem {

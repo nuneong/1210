@@ -134,6 +134,12 @@ export interface TourDetail {
   mapx: string;
   /** 위도 (KATEC 좌표계, 정수형) */
   mapy: string;
+  /** 대분류 */
+  cat1?: string;
+  /** 중분류 */
+  cat2?: string;
+  /** 소분류 */
+  cat3?: string;
 }
 
 /**

@@ -23,6 +23,7 @@
 
 import { notFound } from "next/navigation";
 import { BackButton } from "@/components/tour-detail/back-button";
+import { DetailInfo } from "@/components/tour-detail/detail-info";
 
 interface PlaceDetailPageProps {
   params: Promise<{
@@ -55,16 +56,8 @@ export default async function PlaceDetailPage({
 
         {/* 기본 레이아웃 구조 */}
         <div className="space-y-8">
-          {/* 기본 정보 섹션 (향후 구현) */}
-          <section className="rounded-lg border bg-card p-6">
-            <h1 className="text-2xl font-bold mb-4">관광지 상세 정보</h1>
-            <p className="text-muted-foreground">
-              Content ID: {contentId}
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              기본 정보 섹션은 Phase 3.2에서 구현됩니다.
-            </p>
-          </section>
+          {/* 기본 정보 섹션 */}
+          <DetailInfo contentId={contentId} />
 
           {/* 운영 정보 섹션 (향후 구현) */}
           <section className="rounded-lg border bg-card p-6">
