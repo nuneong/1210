@@ -36,7 +36,6 @@ export function BackButton() {
     <Button
       variant="ghost"
       onClick={handleBack}
-      className="mb-4"
       aria-label="이전 페이지로 돌아가기"
     >
       <ArrowLeft className="mr-2 h-4 w-4" />
