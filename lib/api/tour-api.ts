@@ -54,7 +54,7 @@ const BASE_URL = "https://apis.data.go.kr/B551011/KorService2/";
 /**
  * 기본 타임아웃 (밀리초)
  */
-const DEFAULT_TIMEOUT = 10000; // 10초
+const DEFAULT_TIMEOUT = 30000; // 30초 (공공 API 응답이 느릴 수 있음)
 
 /**
  * 최대 재시도 횟수

@@ -90,8 +90,11 @@ export function TourCard({
             src={imageUrl}
             alt={tour.title}
             fill
+            loading="lazy"
+            placeholder="empty"
             className="object-cover transition-transform duration-200 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            unoptimized={imageUrl.includes("visitkorea")}
             onError={(e) => {
               // 이미지 로드 실패 시 기본 이미지로 대체
               const target = e.target as HTMLImageElement;
