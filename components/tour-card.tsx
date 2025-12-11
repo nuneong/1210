@@ -33,6 +33,14 @@ interface TourCardProps {
    * 추가 클래스명
    */
   className?: string;
+  /**
+   * 선택된 상태인지 여부
+   */
+  isSelected?: boolean;
+  /**
+   * 카드 클릭 시 호출되는 콜백 (상세페이지 이동 전에 호출)
+   */
+  onSelect?: (tourId: string) => void;
 }
 
 /**
@@ -43,25 +51,38 @@ const DEFAULT_IMAGE = "/logo.png";
 /**
  * 관광지 카드 컴포넌트
  */
-export function TourCard({ tour, className }: TourCardProps) {
+export function TourCard({ 
+  tour, 
+  className, 
+  isSelected = false,
+  onSelect 
+}: TourCardProps) {
   const imageUrl = tour.firstimage || tour.firstimage2 || DEFAULT_IMAGE;
   const contentTypeName =
     CONTENT_TYPE_NAMES[tour.contenttypeid as keyof typeof CONTENT_TYPE_NAMES] ||
     "관광지";
   const detailUrl = `/places/${tour.contentid}`;
 
+  const handleClick = () => {
+    if (onSelect) {
+      onSelect(tour.contentid);
+    }
+  };
+
   return (
-    <Link href={detailUrl}>
+    <Link href={detailUrl} onClick={handleClick}>
       <div
         className={cn(
           "group relative rounded-lg border bg-card shadow-sm transition-all duration-200",
           "hover:scale-[1.02] hover:shadow-md",
           "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
           "overflow-hidden",
+          isSelected && "ring-2 ring-primary ring-offset-2",
           className
         )}
         role="article"
         aria-label={`${tour.title} 관광지 카드`}
+        aria-selected={isSelected}
       >
         {/* 썸네일 이미지 */}
         <div className="relative aspect-video w-full overflow-hidden bg-muted">

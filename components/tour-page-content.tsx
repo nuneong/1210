@@ -31,6 +31,18 @@ interface TourPageContentProps {
    * 초기 관광지 목록 (Server Component에서 페칭)
    */
   initialTours: TourItem[];
+  /**
+   * 선택된 관광지 ID
+   */
+  selectedTourId?: string | null;
+  /**
+   * 관광지 선택 콜백
+   */
+  onTourSelect?: (tourId: string) => void;
+  /**
+   * 관광지 목록 변경 콜백 (지도에 전달하기 위해)
+   */
+  onToursChange?: (tours: TourItem[]) => void;
 }
 
 /**
@@ -160,7 +172,12 @@ function filterByPet(
 /**
  * 관광지 페이지 콘텐츠 컴포넌트
  */
-export function TourPageContent({ initialTours }: TourPageContentProps) {
+export function TourPageContent({ 
+  initialTours,
+  selectedTourId,
+  onTourSelect,
+  onToursChange,
+}: TourPageContentProps) {
   const [filters, setFilters] = useState<FilterState>({
     areaCode: "1", // 서울 (기본값)
     contentTypeIds: [],
@@ -169,6 +186,14 @@ export function TourPageContent({ initialTours }: TourPageContentProps) {
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [tours, setTours] = useState<TourItem[]>(initialTours);
+
+  // 초기 렌더링 시 onToursChange 호출 보장
+  useEffect(() => {
+    if (onToursChange && initialTours.length > 0) {
+      console.log("[TourPageContent] 초기 tours 전달:", initialTours.length);
+      onToursChange(initialTours);
+    }
+  }, []); // 초기 마운트 시에만 실행
   const [petInfoMap, setPetInfoMap] = useState<
     Map<string, PetTourInfo | null>
   >(new Map());
@@ -258,6 +283,11 @@ export function TourPageContent({ initialTours }: TourPageContentProps) {
         // 정렬 적용
         const sortedItems = sortTours(filteredItems, filters.sort);
         setTours(sortedItems);
+        
+        // 부모 컴포넌트에 tours 변경 알림
+        if (onToursChange) {
+          onToursChange(sortedItems);
+        }
       } catch (err) {
         const error =
           err instanceof Error ? err : new Error("관광지 목록을 불러올 수 없습니다.");
@@ -294,6 +324,8 @@ export function TourPageContent({ initialTours }: TourPageContentProps) {
         <TourList
           tours={tours}
           isLoading={isLoading || isLoadingPetInfo}
+          selectedTourId={selectedTourId}
+          onTourSelect={onTourSelect}
         />
       )}
     </div>

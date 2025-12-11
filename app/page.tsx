@@ -25,7 +25,7 @@
 import { Suspense } from "react";
 import { getAreaBasedList, extractItems } from "@/lib/api/tour-api";
 import { ErrorMessage } from "@/components/ui/error";
-import { TourPageContent } from "@/components/tour-page-content";
+import { HomeMapView } from "@/components/home-map-view";
 import type { TourItem } from "@/lib/types/tour";
 
 /**
@@ -47,20 +47,6 @@ async function getInitialTours(): Promise<TourItem[]> {
 }
 
 
-/**
- * 네이버 지도 영역 (플레이스홀더)
- * 향후 components/naver-map.tsx로 교체 예정
- */
-function MapPlaceholder() {
-  return (
-    <div className="h-full min-h-[600px] lg:min-h-[600px] rounded-lg border bg-muted flex items-center justify-center">
-      <div className="text-center text-muted-foreground">
-        <p className="text-lg font-semibold mb-2">🗺️ 네이버 지도</p>
-        <p className="text-sm">지도 영역 (구현 예정)</p>
-      </div>
-    </div>
-  );
-}
 
 
 /**
@@ -106,43 +92,7 @@ async function HomeContent() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* 데스크톱: 좌우 분할 레이아웃 */}
-      <div className="hidden lg:grid lg:grid-cols-2 lg:gap-6">
-        {/* 좌측: 필터 및 관광지 목록 */}
-        <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
-          <TourPageContent initialTours={tours} />
-        </div>
-
-        {/* 우측: 네이버 지도 */}
-        <div className="sticky top-20">
-          <MapPlaceholder />
-        </div>
-      </div>
-
-      {/* 모바일/태블릿: 탭 전환 레이아웃 */}
-      <div className="lg:hidden space-y-4">
-        {/* 탭 헤더 (플레이스홀더) */}
-        <div className="flex gap-2 border-b">
-          <button className="px-4 py-2 font-medium border-b-2 border-primary">
-            목록
-          </button>
-          <button className="px-4 py-2 font-medium text-muted-foreground">
-            지도
-          </button>
-        </div>
-
-        {/* 목록 뷰 */}
-        <div>
-          <TourPageContent initialTours={tours} />
-        </div>
-
-        {/* 지도 뷰 (숨김, 탭 전환으로 표시) */}
-        <div className="hidden">
-          <MapPlaceholder />
-        </div>
-      </div>
-    </div>
+    <HomeMapView initialTours={tours} initialAreaCode="1" />
   );
 }
 
