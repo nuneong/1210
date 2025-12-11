@@ -45,6 +45,7 @@ import type {
   TourItem,
   TourDetail,
   TourIntro,
+  TourImage,
 } from "@/lib/types/tour";
 
 /**
@@ -526,6 +527,19 @@ export function extractIntro(
     return null;
   }
   return Array.isArray(items) ? items[0] : items;
+}
+
+/**
+ * 이미지 목록 응답에서 TourImage 배열 추출 헬퍼 함수
+ */
+export function extractImages(
+  response: DetailImageResponse,
+): TourImage[] {
+  const items = response.response.body.items?.item;
+  if (!items) {
+    return [];
+  }
+  return Array.isArray(items) ? items : [items];
 }
 
 /**
