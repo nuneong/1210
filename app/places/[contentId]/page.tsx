@@ -26,6 +26,7 @@ import { BackButton } from "@/components/tour-detail/back-button";
 import { DetailInfo } from "@/components/tour-detail/detail-info";
 import { DetailIntro } from "@/components/tour-detail/detail-intro";
 import { DetailGallery } from "@/components/tour-detail/detail-gallery";
+import { DetailMap } from "@/components/tour-detail/detail-map";
 
 interface PlaceDetailPageProps {
   params: Promise<{
@@ -66,6 +67,9 @@ export default async function PlaceDetailPage({
 
           {/* 이미지 갤러리 섹션 */}
           <DetailGallery contentId={contentId} />
+
+          {/* 지도 섹션 */}
+          <DetailMap contentId={contentId} />
         </div>
       </div>
     </div>
